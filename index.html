@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Banco de teoría MMT2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: una columna de "hoja de examen" centrada, barra de pestañas arriba, tarjeta de pregunta como protagonista */
+:root{
+  --bg:#eef1f4; --paper:#ffffff; --ink:#17212b; --muted:#5b6876; --line:#d5dbe2;
+  --accent:#c2410c; --accent-ink:#ffffff; --accent-soft:#fbe6da;
+  --ok:#15803d; --ok-soft:#dcf2e3; --bad:#b91c1c; --bad-soft:#fbe1e1; --warn:#a16207; --warn-soft:#f8eccb;
+  --f-display:"Archivo","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --paper:#1a2129; --ink:#e6ebf0; --muted:#97a3b0; --line:#2c3641;
+  --accent:#f97316; --accent-ink:#1a1206; --accent-soft:#3a2416;
+  --ok:#4ade80; --ok-soft:#163222; --bad:#f87171; --bad-soft:#3a1c1c; --warn:#facc15; --warn-soft:#332b10; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --paper:#1a2129; --ink:#e6ebf0; --muted:#97a3b0; --line:#2c3641;
+  --accent:#f97316; --accent-ink:#1a1206; --accent-soft:#3a2416;
+  --ok:#4ade80; --ok-soft:#163222; --bad:#f87171; --bad-soft:#3a1c1c; --warn:#facc15; --warn-soft:#332b10; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,5vw,36px);line-height:1.1;margin:0;text-wrap:balance}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:0;max-width:62ch}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tab{font:600 15px var(--f-body);background:none;border:0;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:focus-visible,button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.between{justify-content:space-between}
+.chip{font:500 13px var(--f-body);border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.chip .n{font-family:var(--f-mono);font-size:11px;opacity:.7;margin-left:4px}
+.label{font:600 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.btn{font:600 15px var(--f-body);border-radius:8px;padding:10px 18px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:none}
+.btn:disabled{opacity:.45;cursor:default}
+select{font:500 14px var(--f-body);padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.meta{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted)}
+.tag{font:600 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+.q{font-size:19px;line-height:1.45;font-weight:500;margin:0;text-wrap:pretty}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;font:400 16px var(--f-body);background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:12px 14px;cursor:pointer;width:100%}
+.opt .k{font:600 13px var(--f-mono);min-width:22px;height:22px;border-radius:4px;display:grid;place-items:center;background:var(--bg);flex:none}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.vf{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vf .opt{justify-content:center;font-weight:600;font-size:17px}
+.feedback{border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.feedback.ok{background:var(--ok-soft)} .feedback.bad{background:var(--bad-soft)} .feedback.skip{background:var(--bg)}
+.feedback b{font-family:var(--f-display)}
+.note{font-size:14px;background:var(--warn-soft);color:var(--ink);border-left:3px solid var(--warn);padding:8px 12px;border-radius:4px}
+.key{font-size:12px;color:var(--muted)}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.stat .v{font:800 28px var(--f-display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--muted)}
+.review{display:flex;flex-direction:column;gap:10px}
+.review .it{border-top:1px solid var(--line);padding-top:10px;font-size:15px}
+.review .it .ans{font-size:14px;color:var(--muted)}
+ul.pts{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.cq-list{display:flex;flex-direction:column;gap:12px}
+.cq h3{font:600 17px var(--f-body);margin:0;line-height:1.4}
+.status{font:600 12px var(--f-mono);padding:3px 8px;border-radius:4px}
+.status.yes{background:var(--ok-soft);color:var(--ok)} .status.no{background:var(--warn-soft);color:var(--warn)}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:480px){.q{font-size:17px}.card{padding:16px}}
+@media (prefers-reduced-motion:reduce){.progress i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Máquinas y Motores Térmicos II · Máster UPM · 1.ª PEC (motores)</div>
+    <h1>Banco de teoría <span>MMT2</span></h1>
+    <p class="sub" id="sub">Preguntas de test y cuestiones sacadas de las PEC de 2014 a 2024. Responde, mira la explicación y repite los fallos.</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-test" aria-selected="true" aria-controls="view-test">Test</button>
+    <button class="tab" role="tab" id="tab-cq" aria-selected="false" aria-controls="view-cq">Cuestiones de desarrollo</button>
+  </nav>
+
+  <section id="view-test" class="panel" role="tabpanel">
+    <div class="card" id="config">
+      <div class="row between"><span class="label">Temas</span><button class="chip" id="all-temas" type="button">Todos</button></div>
+      <div class="row" id="tema-chips"></div>
+      <div class="row" style="gap:16px">
+        <label class="row small" for="n-q">Preguntas
+          <select id="n-q"><option>10</option><option selected>15</option><option>20</option><option value="999">Todas</option></select></label>
+        <label class="row small" for="tipo-q">Tipo
+          <select id="tipo-q"><option value="all">V/F y opción múltiple</option><option value="vf">Solo V/F</option><option value="mc">Solo opción múltiple</option></select></label>
+        <label class="row small" for="pen"><input type="checkbox" id="pen" checked> Puntuar como la PEC (los fallos restan)</label>
+      </div>
+      <div class="row"><button class="btn primary" id="start" type="button">Empezar test</button><button class="btn ghost" id="start-fails" type="button">Repetir mis fallos</button><span class="small" id="pool-count"></span></div>
+    </div>
+
+    <div class="card" id="quiz" hidden>
+      <div class="row between"><span class="label" id="q-count"></span><span class="small" id="q-score"></span></div>
+      <div class="progress"><i id="q-bar" style="width:0"></i></div>
+      <div class="meta"><span class="tag" id="q-tema"></span><span id="q-src"></span></div>
+      <p class="q" id="q-text"></p>
+      <div id="q-opts"></div>
+      <div id="q-fb"></div>
+      <div class="row between"><button class="btn ghost" id="skip" type="button">Dejar en blanco</button><button class="btn primary" id="next" type="button" hidden>Siguiente</button></div>
+    </div>
+
+    <div class="card" id="result" hidden>
+      <span class="label">Resultado</span>
+      <div class="score" id="r-stats"></div>
+      <div class="row"><button class="btn primary" id="again" type="button">Otro test</button><button class="btn" id="retry-wrong" type="button">Repetir los fallos de este test</button></div>
+      <div class="review" id="r-review"></div>
+    </div>
+  </section>
+
+  <section id="view-cq" class="panel" role="tabpanel" hidden>
+    <div class="card">
+      <p class="small" style="margin:0">Intenta contestar en voz alta o en papel (gráficas incluidas) y luego abre el guion para comparar. Marca cada una como sabida o para repasar; se guarda en este navegador.</p>
+      <div class="row" id="cq-chips"></div>
+      <div class="row small" id="cq-progress"></div>
+    </div>
+    <div class="cq-list" id="cq-list"></div>
+  </section>
+</div>
+
+<script>
+const TEMAS = {
+  gen:  "Fundamentos y tipos de motores",
+  ren:  "Renovación de la carga y sobrealimentación",
+  comb: "Combustión en MEP y MEC",
+  fuel: "Combustibles",
+  emi:  "Emisiones y postratamiento",
+  curv: "Curvas características",
+  compr:"Compresores volumétricos"
+};
+const KEY = {oficial:"Respuesta de la plantilla oficial", alumno:"Respuesta marcada por un alumno (revisada)", propuesta:"Respuesta propuesta (el documento no traía solución)"};
+
+// tipo vf: a = true/false ; tipo mc: a = índice correcto
+const Q = [
+// ---- PEC1 30/10/2020 (test V/F) ----
+{id:"v1",t:"vf",tm:"ren",src:"PEC1 oct 2020",k:"alumno",q:"Los efectos de la compresibilidad en el llenado se notan predominantemente cuando el número de Mach medio en la válvula supera un valor de aproximadamente 0,5.",a:true,e:"Por encima de un índice de Mach medio de 0,5–0,6 el rendimiento volumétrico cae de forma brusca: el flujo en la válvula se acerca al bloqueo sónico."},
+{id:"v2",t:"vf",tm:"ren",src:"PEC1 oct 2020",k:"alumno",q:"La velocidad de propagación de las ondas es idéntica en conductos de admisión y en conductos de escape.",a:false,e:"La velocidad del sonido es a = √(γRT). Los gases de escape están mucho más calientes, así que las ondas viajan más rápido en el escape."},
+{id:"v3",t:"vf",tm:"ren",src:"PEC1 oct 2020",k:"propuesta",q:"Los motores de mayor régimen de giro no suelen ser turbosobrealimentados por la dificultad del acoplamiento entre la turbina y el motor a regímenes elevados.",a:false,e:"Muchos motores rápidos de automoción llevan turbo. La dificultad de acoplamiento aparece a bajo régimen (poco caudal de escape, retraso del turbo). A alto régimen el exceso se controla con wastegate o turbina de geometría variable."},
+{id:"v4",t:"vf",tm:"ren",src:"PEC1 oct 2020",k:"alumno",q:"La energía puesta a disposición de la turbina en un motor turbosobrealimentado es igual a la que se obtendría si el pistón pudiese proseguir su carrera descendente (más allá del PMI), realizando una expansión isentrópica hasta la presión atmosférica.",a:true,e:"Es la energía del escape espontáneo: el área bajo la expansión isentrópica desde el punto 4 (apertura de escape) hasta la presión ambiente. Es lo que idealmente aprovecha una turbina de impulsos."},
+{id:"v5",t:"vf",tm:"comb",src:"PEC1 oct 2020",k:"alumno",q:"Todos los MEP de inyección directa regulan la potencia a bajas cargas por modificación del dosado, sin necesidad de recurrir al estrangulamiento con la mariposa.",a:false,e:"Solo los que trabajan con carga estratificada a baja carga. Muchos MEP de inyección directa funcionan en modo homogéneo estequiométrico (para usar el catalizador de tres vías) y regulan con mariposa."},
+{id:"v6",t:"vf",tm:"comb",src:"PEC1 oct 2020",k:"propuesta",q:"La relación de compresión de los motores de encendido provocado está limitada por la tendencia a la detonación (o picado).",a:true,e:"Subir la relación de compresión sube presión y temperatura de la mezcla sin quemar y acorta su tiempo de retraso, así que aumenta el riesgo de autoinflamación de la mezcla final."},
+{id:"v7",t:"vf",tm:"fuel",src:"PEC1 oct 2020",k:"alumno",q:"Muchos autobuses urbanos usan gas natural comprimido porque tiene mayor densidad de energía que el gasóleo.",a:false,e:"El GNC tiene mucha menos energía por unidad de volumen que el gasóleo, incluso a 200 bar. Se usa por sus menores emisiones (partículas casi nulas, NOx tratables con catalizador de tres vías) y por coste."},
+{id:"v8",t:"vf",tm:"emi",src:"PEC1 oct 2020",k:"alumno",q:"Un catalizador de tres vías tiene tres conductos independientes para las dos vías de oxidación y la de reducción, y en cada uno de esos conductos tienen lugar reacciones diferentes.",a:false,e:"Es un único monolito con metales nobles (Pt, Pd, Rh) en el que ocurren a la vez la oxidación de CO y HC y la reducción de NOx. Solo funciona bien en una ventana estrecha alrededor de λ = 1."},
+{id:"v9",t:"vf",tm:"fuel",src:"PEC1 oct 2020",k:"alumno",q:"La temperatura de evaporación de una gasolina es de aproximadamente 76 ºC.",a:false,e:"La gasolina es una mezcla de hidrocarburos. No tiene una temperatura de evaporación única sino una curva de destilación, aproximadamente entre 30 y 200 ºC."},
+{id:"v10",t:"vf",tm:"emi",src:"PEC1 oct 2020",k:"alumno",q:"La recirculación de gases de escape (EGR) permite introducir gases inertes en el proceso de combustión.",a:true,e:"Los gases recirculados (CO2, H2O, N2) no reaccionan. Diluyen la mezcla y aumentan su capacidad calorífica, lo que baja la temperatura de llama."},
+{id:"v11",t:"vf",tm:"comb",src:"PEC1 oct 2020",k:"alumno",q:"En las condiciones usuales de trabajo en un MEP, la presión influye más en el tiempo de retraso que la temperatura.",a:false,e:"El tiempo de retraso depende sobre todo de la temperatura (dependencia exponencial tipo Arrhenius). En la zona de trabajo del motor las curvas de retraso son casi planas con la presión."},
+{id:"v12",t:"vf",tm:"fuel",src:"PEC1 oct 2020",k:"alumno",q:"El Número de Octano es una medida de la cantidad de iso-octano presente en un determinado combustible.",a:false,e:"Es el porcentaje en volumen de iso-octano en una mezcla iso-octano / n-heptano que tiene la misma tendencia al picado que el combustible ensayado en el motor CFR. El combustible no tiene por qué contener iso-octano."},
+{id:"v13",t:"vf",tm:"fuel",src:"PEC1 oct 2020",k:"propuesta",q:"El contenido porcentual de carbono en el gas natural es menor que en los biocombustibles líquidos.",a:true,e:"El metano tiene la mayor relación H/C de los hidrocarburos (≈75 % de C en masa), frente a ≈77 % del biodiésel o ≈85 % del HVO. Por eso emite menos CO2 por unidad de energía.",n:"El alumno la dejó en blanco. El etanol (≈52 % C) es la excepción, así que la frase es discutible si se incluyen alcoholes."},
+{id:"v14",t:"vf",tm:"curv",src:"PEC1 oct 2020",k:"alumno",q:"En general, el consumo específico efectivo del motor de un vehículo que circula a velocidad constante por carretera llana y con viento constante es menor cuando se emplean marchas más largas.",a:true,e:"A igual potencia, una marcha más larga baja el régimen y obliga a abrir más el acelerador (más par, más grado de carga). Eso acerca el punto de funcionamiento a la zona de mínimo consumo del mapa."},
+{id:"v15",t:"vf",tm:"curv",src:"PEC1 oct 2020",k:"alumno",q:"Los motores para tracción de vehículos en carretera deben tener curvas de par motor crecientes con el régimen de giro.",a:false,e:"Interesa un par decreciente por encima del régimen de par máximo: si la carga aumenta (una cuesta), el motor baja de vueltas y gana par, así que se autorregula. Eso es la elasticidad."},
+// ---- Ejemplo PEC1 / Examen tipo ----
+{id:"v16",t:"vf",tm:"ren",src:"Ejemplo PEC1",k:"oficial",q:"Las ondas de presión en el colector de escape de un motor se forman por la rápida subida del pistón en la carrera de escape.",a:false,e:"Se forman al abrirse la válvula de escape: el escape espontáneo genera un pulso de presión brusco. El desplazamiento posterior del pistón apenas genera ondas."},
+{id:"v17",t:"vf",tm:"ren",src:"Ejemplo PEC1",k:"oficial",q:"Los motores de mayor régimen de giro necesitan conductos de admisión más cortos para aprovechar el efecto de las ondas para llenar mejor el cilindro.",a:true,e:"A más régimen hay menos tiempo por ciclo. La onda debe ir y volver en ese tiempo, así que la longitud sintonizada es aproximadamente inversamente proporcional al régimen."},
+{id:"v18",t:"vf",tm:"comb",src:"Ejemplo PEC1",k:"oficial",q:"Algunos motores de encendido provocado no usan válvula de mariposa para regular la carga.",a:true,e:"Por ejemplo, los de inyección directa con carga estratificada (regulan con el dosado) o los de distribución variable que regulan con la alzada o el cierre de la válvula de admisión."},
+{id:"v19",t:"vf",tm:"ren",src:"Ejemplo PEC1",k:"oficial",q:"A régimen de giro muy bajo, el número de Mach medio en la válvula de admisión afecta mucho al rendimiento volumétrico.",a:false,e:"A bajo régimen el Mach medio es pequeño. Ahí el rendimiento volumétrico cae sobre todo por el reflujo de mezcla al cilindro por el retraso al cierre de admisión, no por compresibilidad."},
+{id:"v20",t:"vf",tm:"ren",src:"Ejemplo PEC1",k:"oficial",q:"En los motores sobrealimentados por turbina de escape, nunca la presión de entrada a la turbina es menor que la de salida del compresor.",a:false,e:"Con turbogrupos de buen rendimiento puede darse p admisión > p escape (gradiente favorable), lo que mejora el barrido durante el cruce de válvulas."},
+{id:"v21",t:"vf",tm:"fuel",src:"Ejemplo PEC1",k:"propuesta",q:"Un litro de gasóleo contiene más energía que un litro de gasolina.",a:true,e:"Los poderes caloríficos por kg son parecidos (≈42–43 MJ/kg), pero el gasóleo es más denso (≈0,83 frente a ≈0,74 kg/L). Por eso tiene alrededor de un 10 % más de energía por litro.",n:"La plantilla del ejemplo de PEC1 marca Falso. Según los datos físicos es Verdadero. Consúltalo con el profesor por si la pregunta tenía otro matiz."},
+{id:"v22",t:"vf",tm:"comb",src:"Ejemplo PEC1",k:"oficial",q:"Para una posición dada del frente de llama, la mezcla sin quemar en un MEP se autoinflamará siempre que el tiempo de retraso en el motor sea menor que el tiempo que resta de combustión.",a:true,e:"Es la condición de picado: si la mezcla final agota su tiempo de retraso antes de que el frente de llama la alcance, se autoinflama."},
+{id:"v23",t:"vf",tm:"fuel",src:"Ejemplo PEC1",k:"oficial",q:"El tiempo de retraso de un combustible no tiene ninguna relación con su Número de Octano.",a:false,e:"Están directamente relacionados: un mayor Número de Octano significa un mayor tiempo de retraso a la autoinflamación, es decir, más resistencia al picado."},
+{id:"v24",t:"vf",tm:"emi",src:"Ejemplo PEC1",k:"oficial",q:"La recirculación de gases de escape (EGR) permite bajar la emisión de óxidos de nitrógeno por reducción de la temperatura de la llama.",a:true,e:"El NO térmico (mecanismo de Zeldovich) depende fuertemente de la temperatura. Diluir con gases inertes baja la temperatura máxima y, con ella, los NOx."},
+{id:"v25",t:"vf",tm:"emi",src:"Ejemplo PEC1",k:"oficial",q:"Los catalizadores con platino como material activo pueden reducir la emisión de CO en una mezcla estequiométrica.",a:true,e:"El platino (y el paladio) catalizan la oxidación de CO a CO2 y de HC. Con dosado estequiométrico queda oxígeno suficiente en los gases."},
+{id:"v26",t:"vf",tm:"fuel",src:"Ejemplo PEC1",k:"oficial",q:"La temperatura mínima de destilación de una gasolina debe ser mayor de 50 ºC para que no hierva en el motor.",a:false,e:"La gasolina necesita fracciones ligeras (punto inicial ≈30–40 ºC) para el arranque en frío. El riesgo de que hierva (vapor lock) se controla con la presión de vapor y la curva de destilación, no exigiendo más de 50 ºC."},
+{id:"v27",t:"vf",tm:"curv",src:"Ejemplo PEC1",k:"oficial",q:"Un motor con mucha elasticidad es aquel que tiene un régimen de máxima potencia muy elevado.",a:false,e:"La elasticidad compara el par máximo con el par a potencia máxima y el régimen de potencia máxima con el de par máximo. Un motor elástico mantiene mucho par en un rango amplio de regímenes."},
+// ---- PEC Dic 2015 Test B (oficial) ----
+{id:"v28",t:"vf",tm:"comb",src:"PEC dic 2015",k:"oficial",q:"Una combustión con dosado pobre es aquella que tiene exceso de aire.",a:true,e:"Dosado relativo Fr < 1 (λ > 1): hay más aire del estequiométrico."},
+{id:"v29",t:"vf",tm:"ren",src:"PEC dic 2015",k:"oficial",q:"Las ondas del escape espontáneo afectan al llenado del cilindro.",a:true,e:"El pulso reflejado puede llegar a la válvula durante el cruce. Si llega como depresión ayuda al barrido y al llenado; si llega como sobrepresión lo perjudica."},
+{id:"v30",t:"vf",tm:"ren",src:"PEC dic 2015",k:"oficial",q:"El ángulo de retraso al cierre de la válvula de admisión es mayor a menor régimen de giro.",a:false,e:"Es al revés: a mayor régimen la inercia del flujo es mayor y conviene cerrar la admisión más tarde. A bajo régimen un cierre tardío provoca reflujo."},
+{id:"v31",t:"vf",tm:"ren",src:"PEC dic 2015",k:"oficial",q:"Sincronizar el sistema de escape en un motor de 4 cilindros se hace para aumentar el rendimiento mecánico.",a:false,e:"Se agrupan los conductos para que los pulsos de un cilindro no interfieran con el barrido de otro. Mejora el rendimiento volumétrico y el barrido, no el rendimiento mecánico."},
+{id:"v32",t:"vf",tm:"comb",src:"PEC dic 2015",k:"oficial",q:"Al variar el grado de carga se mantiene la cantidad de combustible inyectado, tanto en MEP como en MEC.",a:false,e:"Regular la carga es precisamente cambiar el combustible por ciclo. En el MEC se varía solo el combustible (regulación cualitativa). En el MEP homogéneo se varían aire y combustible a la vez (regulación cuantitativa, con mariposa)."},
+{id:"v33",t:"vf",tm:"ren",src:"PEC dic 2015",k:"oficial",q:"Al reducir la potencia en un MEP cerrando la válvula de mariposa aumenta el trabajo del ciclo de renovación de la carga (bombeo).",a:true,e:"La mariposa crea depresión en la admisión. El lazo de bombeo del diagrama p-V crece y es trabajo perdido, una de las causas del peor rendimiento del MEP a carga parcial."},
+{id:"v34",t:"vf",tm:"ren",src:"PEC dic 2015",k:"oficial",q:"La potencia que genera la turbina en un grupo de sobrealimentación es casi igual a la que consume el compresor.",a:true,e:"En un turbogrupo libre, en régimen estacionario, la turbina solo mueve al compresor: Wt = Wc / ηm, con ηm cercano a 1."},
+{id:"v35",t:"vf",tm:"ren",src:"PEC dic 2015",k:"oficial",q:"En los turbos de paso variable los álabes del rotor del compresor pueden variar su ángulo.",a:false,e:"En los turbos de geometría variable lo que se mueve son los álabes del distribuidor (estator) de la turbina, no el rotor del compresor."},
+{id:"v36",t:"vf",tm:"comb",src:"PEC dic 2015",k:"oficial",q:"La presión de inyección en un motor diésel de inyección directa es mucho mayor que la de un motor de gasolina de inyección directa.",a:true,e:"Common rail diésel: del orden de 1500–2500 bar. Gasolina de inyección directa: del orden de 100–350 bar."},
+{id:"v37",t:"vf",tm:"comb",src:"PEC dic 2015",k:"oficial",q:"La detonación o picado en un MEP produce vibración del gas en los conductos de admisión.",a:false,e:"Las oscilaciones de presión del picado se producen dentro de la cámara de combustión. Son ondas de presión que rebotan en las paredes y producen el ruido metálico característico."},
+{id:"v38",t:"vf",tm:"fuel",src:"PEC dic 2015",k:"oficial",q:"Si a un motor de gasolina diseñado para N.O. 95 se le pone gasolina de N.O. 98, mejora sustancialmente su rendimiento.",a:false,e:"La relación de compresión y el avance están fijados para N.O. 95. Si no había picado, el octanaje extra no aporta una mejora apreciable."},
+{id:"v39",t:"vf",tm:"fuel",src:"PEC dic 2015",k:"oficial",q:"Un combustible de mayor Número de Octano tendría menor Número de Cetano.",a:true,e:"El octano mide resistencia a la autoinflamación y el cetano facilidad para autoinflamarse, así que son tendencias opuestas."},
+{id:"v40",t:"vf",tm:"comb",src:"PEC dic 2015",k:"oficial",q:"La evaporación del combustible en un MEP de mezcla estratificada no afecta al llenado de aire del cilindro.",a:true,e:"En carga estratificada se inyecta al final de la compresión, con la admisión ya cerrada. El combustible no desplaza aire ni enfría la carga durante el llenado."},
+{id:"v41",t:"vf",tm:"fuel",src:"PEC dic 2015",k:"oficial",q:"La temperatura de autoinflamación de un gasóleo es menor que la de una gasolina.",a:true,e:"Gasóleo ≈ 250 ºC frente a gasolina ≈ 400 ºC o más. Por eso el gasóleo sirve para encendido por compresión."},
+{id:"v42",t:"vf",tm:"curv",src:"PEC dic 2015",k:"oficial",q:"El régimen de giro de par máximo de un motor no se aleja mucho del de mínimo consumo.",a:true,e:"El mínimo consumo específico suele darse a plena o casi plena carga y a régimen medio-bajo, cerca del régimen de par máximo, donde el llenado es mejor."},
+{id:"v43",t:"vf",tm:"emi",src:"PEC dic 2015",k:"oficial",q:"Las emisiones de NOx se reducen apreciablemente con un catalizador de oxidación.",a:false,e:"El catalizador de oxidación actúa sobre CO y HC (y oxida NO a NO2). Para reducir NOx hace falta SCR, trampa de NOx o catalizador de tres vías con λ = 1."},
+{id:"v44",t:"vf",tm:"emi",src:"PEC dic 2015",k:"oficial",q:"Para la regeneración de un filtro de partículas es necesario subir la temperatura de escape.",a:true,e:"El hollín se quema a ≈550–600 ºC (menos con NO2 o aditivos). Se consigue con post-inyecciones, estrangulamiento o calentamiento."},
+// ---- 1.ª PEC 26/11/2014 tipo B (sin solución) ----
+{id:"v45",t:"vf",tm:"gen",src:"PEC1 nov 2014",k:"propuesta",q:"El rendimiento de una máquina térmica casi siempre supera el valor 0,6.",a:false,e:"Los valores típicos son 0,25–0,35 en MEP, 0,35–0,50 en MEC y 0,30–0,40 en turbinas de gas en ciclo simple. Solo los ciclos combinados se acercan a 0,6."},
+{id:"v46",t:"vf",tm:"gen",src:"PEC1 nov 2014",k:"propuesta",q:"Los motores de reacción no son motores térmicos.",a:false,e:"Sí lo son: transforman energía térmica de la combustión en energía cinética del chorro (empuje)."},
+{id:"v47",t:"vf",tm:"ren",src:"PEC1 nov 2014",k:"propuesta",q:"Durante el escape espontáneo sale casi toda la masa de gases de la combustión.",a:false,e:"En el escape espontáneo sale una parte importante, del orden de la mitad. El resto lo expulsa el pistón en la carrera de escape forzado y una fracción queda como gases residuales.",n:"Respuesta razonada a partir de la teoría. Contrástala con tus apuntes."},
+{id:"v48",t:"vf",tm:"ren",src:"PEC1 nov 2014",k:"propuesta",q:"El trabajo de escape depende del área del ciclo de bombeo.",a:true,e:"El trabajo de renovación de la carga es el área del lazo de bombeo (escape forzado + admisión) del diagrama p-V."},
+{id:"v49",t:"vf",tm:"comb",src:"PEC1 nov 2014",k:"propuesta",q:"En un MEP, un mayor caudal de aire permite usar más combustible.",a:true,e:"El MEP trabaja con dosado casi fijo (≈ estequiométrico), así que el combustible admisible es proporcional al aire: más aire, más combustible y más potencia."},
+{id:"v50",t:"vf",tm:"ren",src:"PEC1 nov 2014",k:"propuesta",q:"La velocidad del flujo en la válvula de admisión puede superar la del sonido.",a:false,e:"En la sección mínima de paso (la válvula, como una tobera convergente) el flujo como máximo alcanza Mach 1 y se bloquea."},
+{id:"v51",t:"vf",tm:"comb",src:"PEC1 nov 2014",k:"propuesta",q:"La inyección directa en un MEP no siempre se hace en la carrera de compresión.",a:true,e:"En modo homogéneo se inyecta durante la admisión. Solo en carga estratificada se inyecta al final de la compresión."},
+{id:"v52",t:"vf",tm:"comb",src:"PEC1 nov 2014",k:"propuesta",q:"El ángulo de combustión solo depende de la velocidad de la llama en un MEP.",a:false,e:"Depende también de la distancia que recorre la llama (geometría de la cámara, posición de la bujía) y del régimen, porque el ángulo es tiempo de combustión × velocidad angular."},
+{id:"v53",t:"vf",tm:"comb",src:"PEC1 nov 2014",k:"propuesta",q:"Un motor tendrá picado si el tiempo de combustión es mayor que el tiempo de retraso.",a:true,e:"Si la llama tarda más en llegar a la mezcla final que el tiempo de retraso de esa mezcla, esta se autoinflama antes."},
+{id:"v54",t:"vf",tm:"comb",src:"PEC1 nov 2014",k:"propuesta",q:"En un motor alternativo la presión máxima de combustión es siempre constante.",a:false,e:"Varía con el grado de carga, el avance, el régimen, el dosado y entre ciclos (dispersión cíclica)."},
+{id:"v55",t:"vf",tm:"gen",src:"PEC1 nov 2014",k:"propuesta",q:"Dos motores semejantes de la misma cilindrada dan siempre la misma potencia.",a:false,e:"Tienen la misma geometría, pero la potencia depende del punto de funcionamiento (régimen, grado de carga, sobrealimentación). El «siempre» lo hace falso."},
+{id:"v56",t:"vf",tm:"gen",src:"PEC1 nov 2014",k:"propuesta",q:"Los motores de mayor dimensión geométrica son más adiabáticos.",a:true,e:"La relación superficie / volumen disminuye con el tamaño (∝ 1/D), así que las pérdidas de calor relativas son menores."},
+{id:"v57",t:"vf",tm:"gen",src:"PEC1 nov 2014",k:"propuesta",q:"Si se equilibra completamente un cigüeñal, el motor no tendrá ninguna vibración.",a:false,e:"Se pueden equilibrar las masas rotativas, pero quedan las fuerzas de inercia alternativas (sobre todo las de 2.º orden) y el par variable de los gases."},
+{id:"v58",t:"vf",tm:"gen",src:"PEC1 nov 2014",k:"propuesta",q:"Los soportes de un motor reciben una fuerza constante durante un ciclo del motor.",a:false,e:"Reciben el par de reacción, que varía con el par instantáneo de los gases y las inercias, además de las fuerzas no equilibradas."},
+{id:"v59",t:"vf",tm:"gen",src:"PEC1 nov 2014",k:"propuesta",q:"Las fuerzas de inercia alternativas dependen de la masa del pistón.",a:true,e:"F = −m_alt · a_pistón, donde m_alt incluye pistón, bulón, segmentos y parte de la biela."},
+// ---- Test nov 2023 ----
+{id:"v60",t:"vf",tm:"compr",src:"Test PEC nov 2023",k:"oficial",q:"En un compresor volumétrico de doble efecto no hay fugas a través del intersticio entre cilindro y pistón.",a:false,e:"En doble efecto se comprime por las dos caras del pistón, así que siempre hay diferencia de presión entre ambos lados y fuga por los segmentos."},
+{id:"v61",t:"vf",tm:"emi",src:"Test PEC nov 2023",k:"oficial",q:"La emisión de partículas de pequeño diámetro (PM2,5) es menos perjudicial para la salud que la de partículas de gran tamaño.",a:false,e:"Es al revés: las partículas finas penetran hasta los alvéolos y pasan a la sangre. Por eso la normativa limita también el número de partículas."},
+// ---- Opción múltiple ----
+{id:"m1",t:"mc",tm:"gen",src:"PEC1 nov 2014 (A)",k:"propuesta",q:"Se utilizan fundamentalmente motores de combustión interna en los vehículos de transporte terrestre porque:",o:["Dan mucha potencia y tienen alto rendimiento","Utilizan combustibles líquidos, pero su combustión se hace con bajo rendimiento","Tienen elevada potencia específica y responden bien a los transitorios","Pueden girar a alto régimen y transmiten un elevado par motor"],a:2,e:"La clave en automoción es la potencia por unidad de peso y volumen y la buena respuesta en transitorios (cargas y regímenes muy variables)."},
+{id:"m2",t:"mc",tm:"ren",src:"PEC1 nov 2014 (A)",k:"propuesta",q:"El ruido de escape está producido principalmente por:",o:["La velocidad de flujo en la válvula de escape durante la carrera de escape","La onda de presión del gas dentro del cilindro","La onda de choque que se genera al abrir la válvula de escape","Ninguna de las causas anteriores"],a:2,e:"Al abrir la válvula, el salto de presión cilindro / colector genera un pulso muy brusco que se propaga por el escape. El silenciador lo amortigua."},
+{id:"m3",t:"mc",tm:"comb",src:"PEC1 nov 2014 (A)",k:"propuesta",q:"¿Cuál de las siguientes frases NO es cierta?",o:["Solo algunos motores de mezcla homogénea aprovechan la turbulencia de la mezcla para hacer avanzar el frente de llama","La autoinflamación de la mezcla debe evitarse en un MEP si causa una onda de choque que daña los cilindros","Una autoinflamación controlada de una mezcla pobre puede ser una solución para los MEP a carga parcial","El ángulo de combustión puede ser constante al aumentar el régimen de giro de un motor"],a:0,e:"Todos los MEP homogéneos dependen de la turbulencia: la llama laminar sería demasiado lenta. La c) es HCCI. La d) es cierta porque la turbulencia crece con el régimen y la velocidad de llama aumenta casi en proporción."},
+{id:"m4",t:"mc",tm:"gen",src:"PEC1 nov 2014 (A)",k:"propuesta",q:"Si un motor tiene el mismo número de cilindros que otro pero mayor diámetro de pistones, seguramente:",o:["Pierde más calor al refrigerante por unidad de potencia","Tendrá menos tendencia a detonar o picar","Girará un poco más rápido","Tendrá mayor potencia"],a:3,e:"Más diámetro supone más cilindrada y más potencia. Además pierde menos calor relativo (es más adiabático), tiene más tendencia al picado (la llama recorre más distancia) y gira más lento (velocidad media del pistón limitada)."},
+{id:"m5",t:"mc",tm:"gen",src:"PEC1 nov 2014 (A)",k:"propuesta",q:"Al aumentar el régimen de giro de un motor dado, seguro que NO ocurre lo siguiente:",o:["Aumenta la fuerza de inercia alternativa","La masa rotativa desequilibrada es mayor","Las fuerzas centrífugas son mayores","Las fuerzas de inercia pueden llegar a superar a las fuerzas de gases en el cojinete de biela"],a:1,e:"La masa desequilibrada es una propiedad del motor y no cambia con el régimen. Lo que crece (∝ n²) son las fuerzas que genera."},
+{id:"m6",t:"mc",tm:"fuel",src:"Test PEC nov 2023",k:"oficial",q:"¿Por qué se plantea el uso de mezclas pobres de H2 (λ ≈ 2,8) en los MEP?",o:["Por la menor potencia específica","Por la menor emisión de NOx","Por el mayor rendimiento"],a:1,e:"Con H2 la única emisión relevante es el NOx térmico. Con λ ≈ 2,8 la temperatura de llama baja tanto que el NOx casi desaparece. El H2 lo permite por sus amplísimos límites de inflamabilidad."},
+{id:"m7",t:"mc",tm:"comb",src:"Test PEC nov 2023",k:"oficial",q:"La combustión HCCI permite regular la carga para:",o:["El rango alto de carga, por los límites de inflamabilidad de la mezcla a bajos dosados","El rango bajo de carga, por la brusquedad del aumento de presión a altas cargas","Todo el rango de carga"],a:1,e:"A alta carga la autoinflamación simultánea de toda la mezcla produce gradientes de presión excesivos (ruido, esfuerzos). Por eso HCCI se limita a cargas bajas y medias."},
+{id:"m8",t:"mc",tm:"fuel",src:"Test PEC nov 2023",k:"oficial",q:"¿Cuál de las siguientes propiedades NO es cierta para el H2?",o:["Su encendido requiere muy poca energía","Tiene tendencia al picado","Su poder calorífico inferior (por kg) es mayor que el de la gasolina"],a:1,e:"El H2 tiene un octanaje muy alto (RON > 120): no tiende al picado clásico. Su problema es el preencendido y el retroceso de llama por su bajísima energía de ignición. Su PCI (≈120 MJ/kg) casi triplica el de la gasolina."},
+{id:"m9",t:"mc",tm:"fuel",src:"Test PEC nov 2023",k:"oficial",q:"¿Qué ventaja tienen los aceites vegetales hidrotratados (HVO) frente al biodiésel (FAME)?",o:["Provienen de biomasa de segunda generación, no competitiva con la agricultura destinada a la alimentación","Tienen mayor número de cetano","Tienen un mayor parecido al gasóleo, pudiéndose mezclar hasta el 100 %"],a:2,e:"El HVO son parafinas casi idénticas al gasóleo fósil (combustible «drop-in»): se usa puro sin modificar el motor. El FAME se limita a mezclas tipo B7 por estabilidad y compatibilidad.",n:"El HVO también suele tener mayor número de cetano, pero la plantilla da como respuesta la c)."},
+{id:"m10",t:"mc",tm:"curv",src:"Test PEC nov 2023",k:"oficial",q:"La zona de MÍNIMO consumo específico de combustible se encuentra, generalmente:",o:["A bajo régimen y alto grado de carga, por ser las pérdidas mecánicas proporcionales a n³ y por su mayor importancia relativa a bajas cargas","A alto régimen y alto grado de carga, por ser la zona de mayor potencia","A bajo régimen y bajo grado de carga, por ser la zona de menor consumo y menores pérdidas mecánicas"],a:0,e:"A carga alta las pérdidas mecánicas pesan menos en relación con la potencia indicada. A régimen bajo-medio son menores. Así el rendimiento efectivo es máximo.",n:"El enunciado original dice «máximo consumo», pero la respuesta marcada y su justificación corresponden al mínimo. Parece una errata."},
+{id:"m11",t:"mc",tm:"curv",src:"Test PEC nov 2023",k:"oficial",q:"Dos motores con la misma potencia efectiva, uno de corte deportivo y otro de corte industrial: ¿cuál tendrá mayor par efectivo máximo?",o:["El industrial","El deportivo"],a:0,e:"P = M · ω. A igual potencia, el industrial la da a menor régimen, así que necesita más par."},
+{id:"m12",t:"mc",tm:"gen",src:"Apuntes extras (teoría)",k:"alumno",q:"Ordena las máquinas por rendimiento térmico típico, de mayor a menor:",o:["Ciclo combinado > MEC > turbina de gas","MEC > ciclo combinado > turbina de gas","Turbina de gas > MEC > ciclo combinado","MEC > turbina de gas > ciclo combinado"],a:0,e:"Ciclo combinado ≈ 0,55–0,62, diésel ≈ 0,40–0,50, turbina de gas en ciclo simple ≈ 0,30–0,40."},
+{id:"m13",t:"mc",tm:"gen",src:"Apuntes extras (teoría)",k:"alumno",q:"Ordena por potencia específica (potencia por unidad de peso), de mayor a menor:",o:["TG > MCIA > TV","MCIA > TG > TV","TV > TG > MCIA","TG > TV > MCIA"],a:0,e:"La turbina de gas tiene la mayor potencia por kg (por eso domina en aviación). La turbina de vapor, con caldera y condensador, la menor."},
+{id:"m14",t:"mc",tm:"gen",src:"Apuntes extras (teoría)",k:"alumno",q:"¿Por qué las primeras turbinas de gas no daban potencia neta en el eje?",o:["Porque el compresor absorbía toda la potencia generada por la turbina","Porque no existían cámaras de combustión estables","Porque trabajaban en ciclo cerrado"],a:0,e:"Con los bajos rendimientos isentrópicos de los primeros compresores y turbinas, y temperaturas de entrada bajas, el trabajo de compresión igualaba al de expansión."},
+{id:"m15",t:"mc",tm:"gen",src:"Apuntes extras (teoría)",k:"alumno",q:"¿Por qué no está extendido el uso de turbinas de gas en automoción?",o:["Por su bajo rendimiento en condiciones variables (carga parcial y transitorios)","Por su baja potencia específica","Porque no pueden quemar combustibles líquidos"],a:0,e:"La turbina de gas pierde mucho rendimiento fuera del punto de diseño y responde lentamente. El uso en automóvil es casi siempre a carga parcial y muy variable."},
+{id:"m16",t:"mc",tm:"gen",src:"Apuntes extras (teoría)",k:"alumno",q:"¿Cuál de estos motores térmicos puede alcanzar el mayor rendimiento térmico?",o:["Turbina de gas","Turbina de vapor","Motor diésel"],a:2,e:"Los grandes diésel lentos de dos tiempos (marinos, estacionarios) superan el 50 % de rendimiento efectivo."}
+];
+
+const CQ = [
+{id:"c1",tm:"comb",src:"PEC1 oct 2020",q:"Explicar las diferencias del concepto de tiempo de retraso a la autoinflamación en: máquina de compresión rápida, motores de encendido provocado y motores diésel.",p:["Definición: tiempo desde que la mezcla alcanza condiciones de autoinflamación hasta que se autoinflama de forma apreciable (reacciones de prellama).","Máquina de compresión rápida: compresión casi instantánea hasta p y T fijas. Mide el retraso químico puro, que depende sobre todo de la temperatura (Arrhenius). Las curvas son casi planas con la presión en la zona de trabajo de los motores.","MEP: el retraso es el de la mezcla final sin quemar, que se va comprimiendo por el avance de la llama. Interesa que sea largo, mayor que el tiempo que tarda la llama en llegar, para evitar el picado.","MEC: retraso físico (atomización, evaporación, mezcla) más químico, desde el inicio de la inyección hasta el inicio de la combustión. Interesa que sea corto: si es largo se acumula combustible y la combustión es brusca (golpeteo diésel)."]},
+{id:"c2",tm:"curv",src:"PEC1 oct 2020",q:"Usando las curvas isoconsumo, explicar cómo evoluciona el consumo específico efectivo si, sin estar a plena carga, se mantiene la potencia mientras se disminuye el régimen. ¿Qué ecuación sigue la curva de potencia constante en el diagrama Me–n? ¿Qué variable operativa hay que modificar?",p:["Potencia constante: Ne = Me·2πn ⇒ Me = Ne/(2πn). Es una hipérbola en el diagrama par–régimen.","Al bajar el régimen por la hipérbola, el par y el grado de carga aumentan y se cruzan isoconsumos de menor valor, hacia la «isla» de mínimo consumo. El consumo específico disminuye.","Si se baja demasiado (por debajo del régimen de par máximo, o al llegar a plena carga) ya no se puede mantener la potencia y el consumo vuelve a subir.","Variable operativa: el grado de carga (posición del acelerador: mariposa en MEP, combustible por ciclo en MEC). En un vehículo se consigue con marchas más largas."]},
+{id:"c3",tm:"emi",src:"Ejemplo PEC1 / Examen tipo",q:"Describir uno de los principales sistemas de postratamiento de gases de escape empleados actualmente para reducir las emisiones de NOx de los motores diésel.",p:["SCR (reducción catalítica selectiva): se inyecta urea (AdBlue, 32,5 %) antes del catalizador y se descompone en NH3.","Reacción principal: 4 NH3 + 4 NO + O2 → 4 N2 + 6 H2O. Funciona con exceso de O2, que es lo normal en un diésel.","Necesita temperatura mínima (≈200–250 ºC), dosificación controlada para evitar fuga de NH3 (catalizador de limpieza aguas abajo) y un depósito adicional.","Alternativa: trampa de NOx (LNT), que adsorbe NOx en pobre y se regenera con pulsos ricos. Se suele combinar con DOC y DPF."]},
+{id:"c4",tm:"fuel",src:"Ejemplo PEC1",q:"Explicar el concepto de densidad energética de un combustible para motores alternativos y justificar cuáles tienen mayor densidad energética.",p:["Energía almacenada por unidad de volumen (MJ/L) o de masa (MJ/kg). Determina la autonomía con un depósito dado y el peso y volumen del sistema de almacenamiento.","Los combustibles líquidos (gasóleo ≈ 36 MJ/L, gasolina ≈ 32 MJ/L) tienen la mayor densidad volumétrica: son densos y tienen mucho carbono.","Los gaseosos (GNC a 200 bar ≈ 8–9 MJ/L, H2 a 700 bar ≈ 5 MJ/L) tienen muy poca por volumen, aunque el H2 tiene la mayor por masa (≈ 120 MJ/kg).","Los alcoholes tienen menor densidad energética que la gasolina por su oxígeno (etanol ≈ 21 MJ/L)."]},
+{id:"c5",tm:"fuel",src:"PEC1 nov 2023",q:"Combustibles portadores de hidrógeno para motores de combustión interna: cuáles son, propiedades básicas y tipo de motor para su uso (MEP o MEC).",p:["Portadores: H2 puro, amoníaco (NH3), metanol y e-fuels sintéticos (hidrógeno combinado con CO2 o N2).","H2: PCI ≈ 120 MJ/kg pero densidad muy baja, límites de inflamabilidad muy amplios, energía de ignición mínima, alta velocidad de llama y alta temperatura de autoinflamación. Se usa en MEP, con mezclas pobres para bajar NOx; riesgo de preencendido.","NH3: no emite CO2, PCI bajo (≈ 18,6 MJ/kg), llama lenta y difícil de encender. Necesita alta relación de compresión o un combustible piloto (dual-fuel, a menudo con base diésel). Emite NOx y N2O.","Metanol: líquido, alto octanaje; en MEP o dual-fuel en MEC (marino)."]},
+{id:"c6",tm:"compr",src:"PEC1 nov 2023",q:"Dibujar y comentar las curvas características de un compresor volumétrico de émbolo.",p:["Caudal casi independiente de la presión de descarga: disminuye solo ligeramente al aumentar la relación de compresión, por el espacio perjudicial (re-expansión) y las fugas.","Caudal ∝ régimen de giro (cilindrada × n × ηv).","Potencia absorbida creciente con la relación de compresión.","Rendimiento volumétrico decreciente con la relación de compresión: ηv ≈ 1 − ε[(p2/p1)^(1/n) − 1], con ε = espacio perjudicial relativo.","No tiene bombeo (surge) como los turbocompresores: puede trabajar a caudal pequeño con presión alta."]},
+{id:"c7",tm:"ren",src:"PEC1 nov 2022",q:"Justificar por qué algunos motores tienen una válvula de derivación (wastegate) en el sistema de sobrealimentación. Dibujar un esquema de su ubicación.",p:["El turbo se dimensiona pequeño para tener buena respuesta y presión de soplado a bajo régimen.","A alto régimen y carga sobraría energía de escape: presión de soplado excesiva, picado en MEP, cargas mecánicas y sobrevelocidad del turbo.","La wastegate desvía parte del gas de escape por un bypass alrededor de la turbina, antes de su entrada, para limitar la presión de soplado.","Esquema: colector de escape → bifurcación → turbina / válvula wastegate → se unen aguas abajo de la turbina. Mando por presión de soplado (actuador neumático) o electrónico."]},
+{id:"c8",tm:"emi",src:"PEC1 nov 2022",q:"Explicar con ayuda de una gráfica a qué se llama catalizador de tres vías para reducir emisiones en motores de encendido provocado.",p:["«Tres vías» por los tres contaminantes que trata a la vez: oxida CO → CO2 y HC → CO2 + H2O, y reduce NOx → N2.","Gráfica de eficiencia de conversión frente a dosado relativo (o λ): en rico cae la conversión de CO y HC (falta O2), en pobre cae la de NOx (sobra O2).","Solo hay alta eficiencia para los tres en una ventana estrecha alrededor de λ = 1, de ahí el control en lazo cerrado con sonda lambda.","Monolito cerámico con washcoat y metales nobles (Pt, Pd, Rh) y ceria para almacenar O2. Necesita temperatura de activación (light-off ≈ 250–300 ºC)."]},
+{id:"c9",tm:"curv",src:"PEC1 nov 2022",q:"Dibujar la curva de potencia a máximo grado de carga frente al régimen de un motor diésel marino, con las curvas de isoconsumo. Dibujar encima la curva de respuesta de una hélice de paso fijo accionada por ese motor.",p:["Curva de plena carga: potencia creciente con el régimen hasta el régimen nominal (límite por humos o por carga térmica y mecánica).","Isoconsumos: curvas cerradas con la isla de mínimo consumo a carga alta y régimen medio-alto.","Hélice de paso fijo: P ∝ n³ (par ∝ n²). Es una curva cúbica que corta a la de plena carga cerca del punto nominal.","Al reducir velocidad el motor recorre la curva de hélice, a carga cada vez menor y con consumo específico creciente. Conviene que la curva de hélice pase por la zona de buen consumo."]},
+{id:"c10",tm:"comb",src:"Global ene 2023",q:"Con ayuda de gráficos, explicar qué es la intensidad de la detonación en la combustión de motores de encendido provocado.",p:["Diagrama p–α: combustión normal frente a combustión con picado, que muestra oscilaciones de alta frecuencia tras la autoinflamación de la mezcla final.","Intensidad del picado: amplitud de esas oscilaciones de presión. Depende de la fracción de mezcla que se autoinflama de golpe.","Cuanto más tarde aparece el picado (menos mezcla por quemar), menor intensidad; si aparece pronto, más intensidad y más daño (erosión, fusión de pistones).","Factores: relación de compresión, avance, carga, temperatura de admisión, N.O. y geometría y turbulencia de la cámara."]},
+{id:"c11",tm:"ren",src:"Global jul 2023 / PEC1 nov 2014",q:"Explicar la energía disponible en el escape de los motores alternativos para mover la turbina del sistema de sobrealimentación.",p:["Diagrama p-V: al abrir el escape (punto 4) el gas está a alta presión. Si el pistón pudiera seguir, la expansión isentrópica hasta p atm daría el área de energía de escape espontáneo (pulso).","Además está la energía del escape forzado: el pistón empuja el gas contra la contrapresión (rectángulo p_escape × volumen).","Turbina de impulsos: conductos cortos, aprovecha parte de la energía del pulso; mejor respuesta en transitorios pero turbina mayor y de peor rendimiento.","Turbina de presión constante: el depósito de remanso amortigua los pulsos y la energía cinética se pierde en parte; turbina más pequeña y de mejor rendimiento, adecuada para muchos cilindros y régimen estable."]},
+{id:"c12",tm:"ren",src:"PEC1 nov 2014 (A)",q:"Explicar las diferencias entre aprovechar la energía de escape con turbina de impulsos y con turbina de presión constante.",p:["Energía de escape: pulso de flujo y presión al abrir la válvula.","Depósito o colector intermedio: no en impulsos; gran volumen de remanso en presión constante.","Presión de entrada a la turbina: muy variable (pulsante) en impulsos; casi constante en presión constante.","Aprovechamiento del pulso: sí en impulsos; no en presión constante (se disipa en el depósito).","Tamaño y rendimiento: impulsos, turbina más grande y menor rendimiento (flujo no estacionario); presión constante, turbina menor y mejor rendimiento.","Transitorios: mejor en impulsos. Número de cilindros: impulsos agrupa 2–3 cilindros por entrada sin solapes; presión constante va bien con muchos cilindros."]},
+{id:"c13",tm:"ren",src:"PEC nov 2019",q:"Dibujar una curva que represente la evolución del rendimiento volumétrico con el régimen de giro, señalando sobre ella los distintos factores que influyen en su forma.",p:["Curva en campana: máximo a régimen medio y caída a ambos lados.","A bajo régimen: reflujo de mezcla por el retraso al cierre de admisión (diseñado para alto régimen) y calentamiento de la carga por más tiempo de contacto.","A alto régimen: pérdidas de carga ∝ velocidad², efecto de compresibilidad (Mach medio > 0,5) y cierre de admisión insuficiente.","Las ondas (sintonización de conductos) añaden ondulaciones y picos a regímenes concretos; el efecto inercial mejora el llenado a régimen medio-alto."]},
+{id:"c14",tm:"comb",src:"PEC nov 2019",q:"Explicar bajo qué circunstancias se puede producir la autoinflamación de la fracción final de mezcla sin quemar en un motor de encendido por chispa. Concepto de tiempo de retraso.",p:["Tiempo de retraso: tiempo que la mezcla tarda en autoinflamarse una vez sometida a p y T elevadas (reacciones de prellama). Depende sobre todo de la temperatura.","La mezcla final es comprimida y calentada por el avance de la llama y por el pistón.","Hay autoinflamación (picado) si su tiempo de retraso se agota antes de que el frente de llama la alcance: t_retraso < t que resta de combustión.","Favorecen el picado: alta relación de compresión, mucho avance, alta carga, alta temperatura de admisión, bajo N.O., recorrido de llama largo (diámetro grande, bujía descentrada), poca turbulencia y bajo régimen."]},
+{id:"c15",tm:"comb",src:"PEC dic 2015",q:"Dibujar una gráfica presión–ángulo (de −180º a +180º) de un MEP con detonación y explicar brevemente por qué se forma la onda de presión.",p:["Curva p–α con compresión, salto de chispa antes del PMS, combustión y, tras el PMS, oscilaciones de alta frecuencia superpuestas.","Explicación oficial: la onda de presión es una onda de choque que se desplaza por la zona ya quemada. La produce la subida brusca de presión al autoinflamarse simultáneamente toda la mezcla que quedaba por quemar cuando se termina su tiempo de retraso.","Las ondas rebotan en las paredes de la cámara y causan el ruido metálico (picado) y la mayor transmisión de calor."]},
+{id:"c16",tm:"curv",src:"PEC dic 2015",q:"Dibujar la curva característica potencia efectiva – régimen de un motor diésel, indicando la zona de máximo rendimiento, y explicar los límites de régimen de giro.",p:["Potencia creciente con el régimen hasta el nominal; el par tiene su máximo a régimen medio.","Zona de máximo rendimiento (mínimo consumo específico): carga alta y régimen medio, cerca del de par máximo.","Régimen mínimo: estabilidad de funcionamiento al ralentí, inyección y combustión estables, irregularidad cíclica.","Régimen máximo: el regulador limita por tiempo disponible para la combustión diésel (retraso y mezcla), esfuerzos de inercia y velocidad media del pistón, y deterioro del llenado."]},
+{id:"c17",tm:"comb",src:"PEC1 nov 2024",q:"Describir la combustión en un MEP de mezcla estratificada pobre. Ventajas y desventajas en consumo, emisiones y postratamiento, y en qué zona del mapa par-régimen funciona con carga estratificada un MEP de inyección directa, y por qué.",p:["Inyección directa al final de la compresión: nube de mezcla casi estequiométrica alrededor de la bujía, rodeada de aire o EGR. El dosado global es muy pobre.","Ventajas: regulación sin mariposa, con menos pérdidas de bombeo; menos pérdidas de calor (gas pobre aislante); mayor γ. Menor consumo a carga parcial.","Desventajas: no se puede usar catalizador de tres vías (exceso de O2), así que hacen falta trampa de NOx o SCR. Más HC en los bordes de la nube y riesgo de partículas por zonas ricas. Control complejo.","Zona: baja carga y régimen bajo-medio. A alta carga hace falta más combustible que el que cabe en la nube (humos) y a alto régimen no hay tiempo para formar la estratificación; ahí pasa a modo homogéneo."]},
+{id:"c18",tm:"compr",src:"PEC1 nov 2024",q:"Dibujar en un diagrama p-V el ciclo de un compresor volumétrico con espacio perjudicial V_p1 y superponer el ciclo con un espacio perjudicial mayor V_p2. Explicar cómo cambian: trabajo interno del ciclo, caudal volumétrico aspirado, trabajo específico por unidad de masa, potencia específica por unidad de caudal y potencia interna (régimen constante).",p:["Al aumentar el espacio perjudicial, la re-expansión (3-4) termina más tarde y se aspira menos volumen (V1 − V4 menor).","Trabajo interno del ciclo: disminuye, porque el área encerrada es menor al aspirar menos gas.","Caudal volumétrico aspirado: disminuye (menor rendimiento volumétrico).","Trabajo específico por unidad de masa: no cambia, porque las presiones y el exponente politrópico son los mismos (w = ∫v dp depende solo de p1, p2 y n).","Potencia por unidad de caudal: igual, por el mismo argumento.","Potencia interna necesaria: disminuye en la misma proporción que el caudal, a régimen constante."]}
+];
+
+/* ---------- estado ---------- */
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let selTemas = new Set(Object.keys(TEMAS));
+let fails = new Set(store.get("mmt2_fails", []));
+let cqState = store.get("mmt2_cq", {});
+let run = null;
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ---------- configuración ---------- */
+function renderChips(){
+  const box = $("#tema-chips"); box.innerHTML = "";
+  for(const [k,label] of Object.entries(TEMAS)){
+    const n = Q.filter(q=>q.tm===k).length; if(!n) continue;
+    const b = document.createElement("button");
+    b.type="button"; b.className="chip"; b.setAttribute("aria-pressed", selTemas.has(k));
+    b.innerHTML = esc(label)+'<span class="n">'+n+'</span>';
+    b.onclick = () => { selTemas.has(k) ? selTemas.delete(k) : selTemas.add(k); renderChips(); };
+    box.appendChild(b);
+  }
+  const pool = poolQ();
+  $("#pool-count").textContent = pool.length + " preguntas disponibles";
+  $("#start").disabled = pool.length === 0;
+  $("#start-fails").disabled = fails.size === 0;
+  $("#start-fails").textContent = fails.size ? "Repetir mis fallos ("+fails.size+")" : "Repetir mis fallos";
+}
+function poolQ(){
+  const tipo = $("#tipo-q").value;
+  return Q.filter(q => selTemas.has(q.tm) && (tipo==="all" || q.t===tipo));
+}
+$("#all-temas").onclick = () => { selTemas = selTemas.size===Object.keys(TEMAS).length ? new Set() : new Set(Object.keys(TEMAS)); renderChips(); };
+$("#tipo-q").onchange = renderChips;
+
+function startRun(list){
+  run = {list, i:0, ok:0, bad:0, blank:0, wrong:[], answered:false};
+  $("#config").hidden = true; $("#result").hidden = true; $("#quiz").hidden = false;
+  showQ();
+}
+$("#start").onclick = () => { const n = +$("#n-q").value; startRun(shuffle(poolQ()).slice(0, n)); };
+$("#start-fails").onclick = () => { startRun(shuffle(Q.filter(q=>fails.has(q.id)))); };
+
+/* ---------- pregunta ---------- */
+function points(){
+  const pen = $("#pen").checked;
+  return run.ok - (pen ? run.bad : 0);
+}
+function showQ(){
+  const q = run.list[run.i]; run.answered = false;
+  $("#q-count").textContent = "Pregunta " + (run.i+1) + " de " + run.list.length;
+  $("#q-bar").style.width = (run.i / run.list.length * 100) + "%";
+  $("#q-score").textContent = "✓ " + run.ok + "  ✗ " + run.bad + "  — " + run.blank;
+  $("#q-tema").textContent = TEMAS[q.tm];
+  $("#q-src").textContent = q.src + (q.t==="vf" ? " · Verdadero / Falso" : " · Opción múltiple");
+  $("#q-text").textContent = q.q;
+  $("#q-fb").innerHTML = ""; $("#next").hidden = true; $("#skip").hidden = false;
+  const box = $("#q-opts"); box.innerHTML = "";
+  if(q.t==="vf"){
+    box.className = "vf";
+    [["V","Verdadero",true],["F","Falso",false]].forEach(([k,l,v])=>{
+      const b = mkOpt(k,l); b.dataset.v = v; b.onclick = () => answer(v===q.a, b, v); box.appendChild(b);
+    });
+  } else {
+    box.className = "opts";
+    q.o.forEach((txt,idx)=>{
+      const b = mkOpt("abcd"[idx], txt); b.dataset.v = idx; b.onclick = () => answer(idx===q.a, b, idx); box.appendChild(b);
+    });
+  }
+}
+function mkOpt(k, l){
+  const b = document.createElement("button"); b.type="button"; b.className="opt";
+  b.innerHTML = '<span class="k">'+esc(k)+'</span><span>'+esc(l)+'</span>'; return b;
+}
+function correctLabel(q){ return q.t==="vf" ? (q.a ? "Verdadero" : "Falso") : ("abcd"[q.a]+") "+q.o[q.a]); }
+function answer(isOk, btn, val){
+  if(run.answered) return; run.answered = true;
+  const q = run.list[run.i];
+  document.querySelectorAll("#q-opts .opt").forEach(b=>{
+    b.disabled = true;
+    const v = q.t==="vf" ? (b.dataset.v==="true") : +b.dataset.v;
+    if(v===q.a) b.classList.add("ok");
+  });
+  if(isOk){ run.ok++; fails.delete(q.id); }
+  else { run.bad++; btn.classList.add("bad"); fails.add(q.id); run.wrong.push(q); }
+  store.set("mmt2_fails", [...fails]);
+  feedback(q, isOk ? "ok" : "bad");
+}
+function feedback(q, kind){
+  const head = kind==="ok" ? "Correcto" : kind==="bad" ? "Incorrecto. La respuesta es: "+correctLabel(q) : "En blanco. La respuesta es: "+correctLabel(q);
+  $("#q-fb").innerHTML = '<div class="feedback '+kind+'"><b>'+esc(head)+'</b><span>'+esc(q.e)+'</span>'+
+    (q.n ? '<div class="note">'+esc(q.n)+'</div>' : '') + '<span class="key">'+esc(KEY[q.k])+'</span></div>';
+  $("#skip").hidden = true; $("#next").hidden = false;
+  $("#next").textContent = run.i+1 < run.list.length ? "Siguiente" : "Ver resultado";
+  $("#next").focus({preventScroll:true});
+}
+$("#skip").onclick = () => {
+  if(run.answered) return; run.answered = true; const q = run.list[run.i]; run.blank++;
+  document.querySelectorAll("#q-opts .opt").forEach(b=>{ b.disabled = true; const v = q.t==="vf" ? (b.dataset.v==="true") : +b.dataset.v; if(v===q.a) b.classList.add("ok"); });
+  feedback(q, "skip");
+};
+$("#next").onclick = () => { run.i++; run.i < run.list.length ? showQ() : showResult(); };
+
+/* ---------- resultado ---------- */
+function showResult(){
+  $("#quiz").hidden = true; $("#result").hidden = false;
+  const n = run.list.length, pts = points();
+  const nota = Math.max(0, pts) / n * 10;
+  $("#r-stats").innerHTML =
+    stat(nota.toFixed(1).replace(".",","), "Nota sobre 10" + ($("#pen").checked ? " (fallos restan)" : "")) +
+    stat(run.ok + " / " + n, "Aciertos") + stat(run.bad, "Fallos") + stat(run.blank, "En blanco");
+  $("#retry-wrong").disabled = run.wrong.length === 0;
+  $("#r-review").innerHTML = run.wrong.length ? '<span class="label">Para repasar</span>' + run.wrong.map(q =>
+    '<div class="it"><div>'+esc(q.q)+'</div><div class="ans"><b>'+esc(correctLabel(q))+'.</b> '+esc(q.e)+'</div></div>').join("")
+    : '<p class="small" style="margin:0">Sin fallos en este test.</p>';
+  renderChips();
+}
+function stat(v,l){ return '<div class="stat"><div class="v">'+esc(v)+'</div><div class="l">'+esc(l)+'</div></div>'; }
+$("#again").onclick = () => { $("#result").hidden = true; $("#config").hidden = false; renderChips(); };
+$("#retry-wrong").onclick = () => startRun(shuffle(run.wrong));
+
+/* ---------- cuestiones ---------- */
+let cqFilter = "all";
+function renderCQ(){
+  const chips = $("#cq-chips"); chips.innerHTML = "";
+  const opts = [["all","Todas"],["todo","Por repasar"], ...Object.entries(TEMAS).filter(([k])=>CQ.some(c=>c.tm===k))];
+  for(const [k,l] of opts){
+    const b = document.createElement("button"); b.type="button"; b.className="chip"; b.setAttribute("aria-pressed", cqFilter===k);
+    b.textContent = l; b.onclick = () => { cqFilter = k; renderCQ(); }; chips.appendChild(b);
+  }
+  const known = CQ.filter(c=>cqState[c.id]==="yes").length;
+  $("#cq-progress").textContent = known + " de " + CQ.length + " marcadas como sabidas";
+  const list = $("#cq-list"); list.innerHTML = "";
+  CQ.filter(c => cqFilter==="all" || (cqFilter==="todo" ? cqState[c.id]!=="yes" : c.tm===cqFilter)).forEach(c=>{
+    const st = cqState[c.id];
+    const d = document.createElement("article"); d.className = "card cq";
+    d.innerHTML =
+      '<div class="meta"><span class="tag">'+esc(TEMAS[c.tm])+'</span><span>'+esc(c.src)+'</span>'+
+      (st ? '<span class="status '+st+'">'+(st==="yes"?"Sabida":"Por repasar")+'</span>' : '')+'</div>'+
+      '<h3>'+esc(c.q)+'</h3>'+
+      '<div class="pts-box" hidden><span class="label">Guion de respuesta</span><ul class="pts">'+c.p.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul></div>'+
+      '<div class="row"><button class="btn reveal" type="button">Ver guion</button>'+
+      '<button class="btn ghost yes" type="button">La sé</button><button class="btn ghost no" type="button">Repasar</button></div>';
+    const box = d.querySelector(".pts-box"), rv = d.querySelector(".reveal");
+    rv.onclick = () => { box.hidden = !box.hidden; rv.textContent = box.hidden ? "Ver guion" : "Ocultar guion"; };
+    d.querySelector(".yes").onclick = () => { cqState[c.id]="yes"; store.set("mmt2_cq", cqState); renderCQ(); };
+    d.querySelector(".no").onclick = () => { cqState[c.id]="no"; store.set("mmt2_cq", cqState); renderCQ(); };
+    list.appendChild(d);
+  });
+  if(!list.children.length) list.innerHTML = '<div class="card small">No quedan cuestiones en este filtro.</div>';
+}
+
+/* ---------- pestañas ---------- */
+function tab(which){
+  const t = which==="cq";
+  $("#tab-test").setAttribute("aria-selected", !t); $("#tab-cq").setAttribute("aria-selected", t);
+  $("#view-test").hidden = t; $("#view-cq").hidden = !t;
+  if(t) renderCQ();
+}
+$("#tab-test").onclick = () => tab("test"); $("#tab-cq").onclick = () => tab("cq");
+
+$("#sub").textContent = Q.filter(q=>q.t==="vf").length + " frases de verdadero/falso, " + Q.filter(q=>q.t==="mc").length +
+  " de opción múltiple y " + CQ.length + " cuestiones de desarrollo sacadas de las PEC de 2014 a 2024. Responde, lee la explicación y repite los fallos.";
+renderChips();
+// abre directamente con un test de 15 preguntas para practicar sin configurar nada
+startRun(shuffle(poolQ()).slice(0, 15));
+</script>
+
+</body>
+</html>
